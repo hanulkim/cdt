@@ -26,15 +26,14 @@ timestamp = datestr(datevec(now()), 'yyyymmdd_HHMMSS');
 log_file = fullfile('log', ['test_', timestamp, '.txt']);
 diary(log_file);
 
-%gpuDevice([]);
-%gpu_id = 1;
-%disp(gpuDevice(gpu_id));
-%caffe.set_device(gpu_id-1);
+gpuDevice([]);
+gpu_id = 1;
+disp(gpuDevice(gpu_id));
+caffe.set_device(gpu_id-1);
 
 net = caffe.Net(conf.net_def, 'test');
 net.copy_from(conf.net_model);
-%caffe.set_mode_gpu();
-caffe.set_mode_cpu();
+caffe.set_mode_gpu();
   
 fprintf('###########################################################\n');
 fprintf('# Seuence Name: %s\n', conf.seq_info.name);
@@ -83,7 +82,7 @@ end
 % Save  
 % ---------------------------------------------------------  
 fprintf('# --- 05. Save \n');
-SaveResults(conf, trajs, n, target_length);
+SaveResults(conf, trajs, target_length);
   
 fprintf('###########################################################\n\n');
 
@@ -124,26 +123,13 @@ conf.ssvm_opts.C = 10;
 end
 
 % -----------------------------------------------------------------------------
-function seq_info = LoadSeqInfo(conf)
-% -----------------------------------------------------------------------------
-seq_info = cell(1,numel(conf.seq_list));
-for n = 1:numel(conf.seq_list)
-  seq_info{n}.name = conf.seq_list{n};
-  seq_info{n}.im_path = fullfile(conf.seq_path,'im',seq_info{n}.name);
-  seq_info{n}.im_list = dir(fullfile(seq_info{n}.im_path, '*.jpg'));
-  seq_info{n}.im_list = {seq_info{n}.im_list.name};
-end
-
-end
-
-% -----------------------------------------------------------------------------
-function [] = SaveResults(conf, trajs, n, target_length)
+function [] = SaveResults(conf, trajs, target_length)
 % -----------------------------------------------------------------------------
 if ~exist(conf.res_path,'dir') 
   mkdir(conf.res_path); 
 end
 
-res_fn = sprintf('%s.txt', conf.seq_list{n});
+res_fn = sprintf('%s.txt', conf.seq_info.name);
 res_fid = fopen(fullfile(conf.res_path,res_fn),'w');
 for t = 1:numel(trajs)
   if numel(trajs{t}) == 0, continue; end
